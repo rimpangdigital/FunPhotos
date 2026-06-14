@@ -3,645 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rimpang Digital Kreatif - Movie Photo Booth</title>
+    <title>RIMPANG DIGITAL KREATIF - AI Photo Booth</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Righteous&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-        
+        /* Desain Retro Pop / Neo Brutalism */
+        :root {
+            --color-bg: #fdf6e3;
+            --color-primary: #FF00FF; /* Magenta */
+            --color-secondary: #00FFFF; /* Cyan */
+            --color-tertiary: #FFFF00; /* Yellow */
+            --color-dark: #111111;
+            --border-width: 4px;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
-            color: #f8fafc;
+            font-family: 'Space Mono', monospace;
+            background-color: var(--color-bg);
+            /* Polka dot background */
+            background-image: radial-gradient(var(--color-dark) 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: var(--color-dark);
+            min-height: 100vh;
         }
 
-        /* Custom Scrollbar for Themes */
-        .theme-scroll::-webkit-scrollbar {
-            height: 8px;
-        }
-        .theme-scroll::-webkit-scrollbar-track {
-            background: #1e293b; 
-            border-radius: 4px;
-        }
-        .theme-scroll::-webkit-scrollbar-thumb {
-            background: #475569; 
-            border-radius: 4px;
-        }
-        .theme-scroll::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b; 
+        h1, h2, h3, .retro-title {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
         }
 
-        .shutter-btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .shutter-btn:active {
-            transform: scale(0.9);
+        .retro-box {
+            background-color: white;
+            border: var(--border-width) solid var(--color-dark);
+            box-shadow: 8px 8px 0px var(--color-dark);
+            border-radius: 0px;
+            transition: all 0.2s ease;
         }
 
-        .flash-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: white;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 50;
+        .retro-btn {
+            font-family: 'Righteous', cursive;
+            text-transform: uppercase;
+            border: var(--border-width) solid var(--color-dark);
+            box-shadow: 6px 6px 0px var(--color-dark);
+            transition: all 0.1s;
+            cursor: pointer;
+            position: relative;
+            top: 0;
+            left: 0;
+        }
+
+        .retro-btn:hover {
+            box-shadow: 8px 8px 0px var(--color-dark);
+            transform: translate(-2px, -2px);
+        }
+
+        .retro-btn:active {
+            box-shadow: 0px 0px 0px var(--color-dark);
+            transform: translate(6px, 6px);
+        }
+
+        .bg-magenta { background-color: var(--color-primary); color: white; }
+        .bg-cyan { background-color: var(--color-secondary); color: var(--color-dark); }
+        .bg-yellow { background-color: var(--color-tertiary); color: var(--color-dark); }
+        .bg-white { background-color: white; color: var(--color-dark); }
+
+        .retro-input {
+            border: var(--border-width) solid var(--color-dark);
+            background-color: white;
+            padding: 0.5rem;
+            font-family: 'Space Mono', monospace;
         }
         
-        .flash-animation {
-            animation: flash 0.5s ease-out;
+        .retro-input:focus {
+            outline: none;
+            background-color: #f0f0f0;
         }
 
-        @keyframes flash {
+        /* Loading Animation */
+        @keyframes blink {
             0% { opacity: 1; }
-            100% { opacity: 0; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .blinking {
+            animation: blink 1s infinite;
         }
 
-        #video-preview {
-            transform: scaleX(-1); /* Mirror effect for webcam */
-            object-fit: cover;
-        }
-        
-        /* Mirror canvas when drawing unless it's text/overlay */
-        .mirrored-canvas {
-            transform: scaleX(-1);
+        /* Hide elements intended for print only */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="p-4 md:p-8 flex flex-col items-center">
 
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 shadow-lg sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                    R
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-orange-500">RIMPANG DIGITAL</h1>
-                    <p class="text-xs text-slate-400 font-medium">Movie Photo Booth</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2 sm:gap-4">
-                <a href="https://rimpangdigital.com/" target="_blank" class="hidden sm:flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-amber-400 transition-colors">
-                    <i class="fas fa-globe"></i> Website
-                </a>
-                <a href="https://wa.me/6281381378871" target="_blank" class="w-9 h-9 rounded-full bg-green-600/20 text-green-500 flex items-center justify-center hover:bg-green-600 hover:text-white transition-all">
-                    <i class="fab fa-whatsapp text-lg"></i>
-                </a>
-                <a href="https://www.instagram.com/rimpang.digital/reels/?__d=1%2F" target="_blank" class="w-9 h-9 rounded-full bg-pink-600/20 text-pink-500 flex items-center justify-center hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-600 hover:text-white transition-all">
-                    <i class="fab fa-instagram text-lg"></i>
-                </a>
-            </div>
+    <!-- Header Section -->
+    <header class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="retro-box bg-white p-4 text-center md:text-left transform -rotate-2">
+            <h1 class="text-4xl md:text-5xl text-red-500" style="text-shadow: 2px 2px 0 #000;">RIMPANG</h1>
+            <h2 class="text-2xl md:text-3xl text-blue-500">DIGITAL KREATIF</h2>
+            <p class="text-xs font-bold mt-1">AI PHOTO BOOTH</p>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="https://rimpangdigital.com/" target="_blank" class="retro-btn bg-cyan px-4 py-3 rounded-lg flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                Website Resmi
+            </a>
+            <a href="https://www.instagram.com/rimpang.digital/reels/?__d=1%2F" target="_blank" class="retro-btn bg-magenta px-4 py-3 rounded-lg flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                Instagram
+            </a>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-start p-4 w-full max-w-5xl mx-auto">
+    <!-- Main Content App -->
+    <main class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
         
-        <!-- Camera Container -->
-        <div class="w-full relative rounded-2xl overflow-hidden bg-black shadow-2xl border-4 border-slate-800 aspect-video md:aspect-[16/9] flex items-center justify-center group">
+        <!-- Kiri: Input & Pengaturan -->
+        <div class="retro-box bg-white p-6 rounded-xl flex flex-col gap-6">
+            <h3 class="text-2xl border-b-4 border-black pb-2">1. SUMBER FOTO</h3>
             
-            <!-- Video Element -->
-            <video id="video-preview" autoplay playsinline class="w-full h-full object-cover transition-all duration-300"></video>
-            
-            <!-- Camera Status/Overlay UI -->
-            <div id="camera-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10">
-                <i class="fas fa-camera text-4xl text-slate-500 mb-4 animate-pulse"></i>
-                <p class="text-slate-400 text-sm">Menghubungkan Kamera...</p>
-                <button id="start-cam-btn" class="mt-4 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-full transition-colors hidden">
-                    Izinkan Kamera
-                </button>
+            <!-- Toggle Input -->
+            <div class="flex gap-2 w-full">
+                <button id="btnTabUpload" class="retro-btn bg-yellow flex-1 py-2 font-bold" onclick="switchTab('upload')">UPLOAD</button>
+                <button id="btnTabCamera" class="retro-btn bg-white flex-1 py-2 font-bold" onclick="switchTab('camera')">KAMERA</button>
             </div>
 
-            <!-- Active Theme Badge -->
-            <div class="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 z-20">
-                <span id="current-theme-label" class="text-sm font-bold text-amber-400">Pilih Tema Film</span>
+            <!-- Upload Section -->
+            <div id="sectionUpload" class="flex flex-col gap-4">
+                <label class="retro-input flex flex-col items-center justify-center p-8 cursor-pointer bg-gray-50 hover:bg-gray-100 transition border-dashed border-4 border-black">
+                    <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <span class="font-bold text-center">Pilih Gambar / Drag & Drop</span>
+                    <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+                </label>
             </div>
 
-            <!-- Flash Effect -->
-            <div id="flash-screen" class="flash-overlay"></div>
-            
-            <!-- Live Overlay Text (rendered dynamically in JS) -->
-            <div id="live-overlay" class="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 opacity-80">
-                <!-- Filled by JS -->
+            <!-- Camera Section -->
+            <div id="sectionCamera" class="hidden flex-col gap-4">
+                <div class="relative border-4 border-black bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+                    <video id="videoElement" class="w-full h-full object-cover hidden" autoplay playsinline></video>
+                    <div id="cameraPlaceholder" class="text-white text-center font-bold">Kamera Belum Aktif</div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btnStartCamera" class="retro-btn bg-cyan flex-1 py-2" onclick="startCamera()">Nyalakan Kamera</button>
+                    <button id="btnCapture" class="retro-btn bg-magenta flex-1 py-2 hidden" onclick="capturePhoto()">Jepret!</button>
+                </div>
             </div>
-        </div>
 
-        <!-- Theme Selector -->
-        <div class="w-full mt-6">
-            <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Pilih Tema Film (Sesuaikan Gestur!)</h2>
-            <div class="flex overflow-x-auto gap-3 pb-4 theme-scroll px-2" id="theme-container">
-                <!-- Theme buttons generated via JS -->
+            <!-- Preview Input Foto -->
+            <div id="inputPreviewContainer" class="hidden flex-col gap-2">
+                <h4 class="font-bold">Foto Terpilih:</h4>
+                <div class="border-4 border-black p-2 bg-gray-100 relative">
+                    <img id="inputPreviewImage" class="w-full h-auto object-cover max-h-48" src="" alt="Preview">
+                    <button onclick="clearInput()" class="absolute top-0 right-0 bg-red-500 text-white p-1 border-2 border-black transform translate-x-2 -translate-y-2 hover:bg-red-600">X</button>
+                </div>
             </div>
-        </div>
 
-        <!-- Capture Button -->
-        <div class="mt-4 mb-8 flex flex-col items-center">
-            <button id="capture-btn" class="shutter-btn relative w-20 h-20 rounded-full bg-slate-200 border-4 border-slate-400 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] disabled:opacity-50 disabled:cursor-not-allowed">
-                <div class="w-16 h-16 rounded-full bg-amber-500 border-2 border-slate-200"></div>
+            <h3 class="text-2xl border-b-4 border-black pb-2 mt-4">2. PILIH TEMA FILM</h3>
+            <select id="themeSelect" class="retro-input text-lg font-bold p-3 appearance-none cursor-pointer">
+                <option value="" disabled selected>-- Pilih Semesta Film --</option>
+                <option value="matrix">1. The Matrix (Cyberpunk, Hacker, Kacamata Hitam)</option>
+                <option value="starwars">2. Star Wars (Jedi, Luar Angkasa, Futuristik)</option>
+                <option value="harrypotter">3. Harry Potter (Penyihir, Tongkat Sihir, Hogwarts)</option>
+                <option value="jurassic">4. Jurassic Park (Hutan Tropis, Penjelajah, Dinosaurus)</option>
+                <option value="godfather">5. The Godfather (Mafia Klasik, Jas Rapi, Retro)</option>
+                <option value="avatar">6. Avatar (Pandora, Hutan Menyala, Fiksi Ilmiah)</option>
+                <option value="madmax">7. Mad Max (Post-Apocalyptic, Gurun, Punk)</option>
+                <option value="titanic">8. Titanic (Romantis Klasik, Kapal Mewah, Gaun/Jas)</option>
+                <option value="avengers">9. Marvel Avengers (Pahlawan Super, Aksi, Kota Epik)</option>
+                <option value="barbie">10. Barbie (Dunia Pink, Fashionable, Plastik Estetik)</option>
+            </select>
+
+            <button id="btnGenerate" class="retro-btn bg-magenta text-2xl py-4 mt-4 w-full disabled:opacity-50 disabled:cursor-not-allowed" onclick="generateAIPhoto()">
+                ✨ TRANSFORMASI AI ✨
             </button>
-            <p class="mt-3 text-slate-400 text-sm font-medium">Ambil Foto</p>
         </div>
 
+        <!-- Kanan: Hasil & Loading -->
+        <div class="retro-box bg-white p-6 rounded-xl flex flex-col gap-6 relative min-h-[500px]">
+            <h3 class="text-2xl border-b-4 border-black pb-2">3. HASIL GENERATE</h3>
+            
+            <!-- Area Hasil (Default Empty State) -->
+            <div id="resultEmpty" class="flex-1 flex flex-col items-center justify-center text-center opacity-50">
+                <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <p class="font-bold text-xl">Foto AI kamu akan muncul di sini.</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden flex-1 flex-col items-center justify-center text-center">
+                <div class="w-16 h-16 border-8 border-magenta border-t-yellow rounded-full animate-spin mb-4 border-black"></div>
+                <h2 class="retro-title text-2xl blinking text-magenta mb-2">MEMPROSES DATA...</h2>
+                <p id="loadingMessage" class="font-bold text-sm bg-yellow p-2 border-2 border-black">AI sedang melukis ulang realita.</p>
+                <!-- Indikator Anti Error -->
+                <p id="retryMessage" class="text-xs text-red-500 font-bold mt-4 hidden">Server sibuk. Mencoba ulang... <span id="retryCount">0</span>/5</p>
+            </div>
+
+            <!-- Result Output -->
+            <div id="resultOutput" class="hidden flex-1 flex-col gap-4">
+                <div class="border-4 border-black p-2 bg-gray-100" id="print-area">
+                    <img id="finalImage" src="" alt="Hasil AI" class="w-full h-auto object-cover border-2 border-black">
+                    <!-- Watermark for print -->
+                    <div class="hidden print:block text-center font-bold mt-2 font-['Bangers'] text-xl">RIMPANG DIGITAL KREATIF AI</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mt-auto">
+                    <button class="retro-btn bg-cyan py-3 flex justify-center items-center gap-2" onclick="downloadJPG()">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Simpan JPG
+                    </button>
+                    <button class="retro-btn bg-yellow py-3 flex justify-center items-center gap-2" onclick="printImage()">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Print Lgsg
+                    </button>
+                </div>
+            </div>
+
+        </div>
     </main>
 
-    <!-- Result Modal (Hidden by default) -->
-    <div id="result-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
-        <div class="w-full max-w-4xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 flex flex-col">
-            
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center p-4 border-b border-slate-700">
-                <h3 class="font-bold text-lg text-white"><i class="fas fa-image text-amber-500 mr-2"></i>Hasil Photo Booth</h3>
-                <button id="close-modal-btn" class="text-slate-400 hover:text-white transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
+    <!-- Canvas Tersembunyi untuk proses gambar -->
+    <canvas id="hiddenCanvas" class="hidden"></canvas>
 
-            <!-- Result Canvas/Image Area -->
-            <div class="p-4 bg-black flex justify-center items-center relative">
-                <!-- The actual canvas we draw to -->
-                <canvas id="photo-canvas" class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg"></canvas>
-            </div>
-
-            <!-- Export Actions -->
-            <div class="p-6 bg-slate-800 flex flex-wrap justify-center gap-4">
-                <button id="download-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-blue-900/50">
-                    <i class="fas fa-download"></i> Simpan JPG
-                </button>
-                <button id="print-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-emerald-900/50">
-                    <i class="fas fa-print"></i> Print Langsung
-                </button>
-                <button id="retake-btn" class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg transition-all">
-                    <i class="fas fa-redo"></i> Foto Ulang
-                </button>
-            </div>
-            
-            <!-- Direct CTA to Website -->
-            <div class="p-4 bg-slate-900 text-center border-t border-slate-700">
-                <p class="text-sm text-slate-400 mb-2">Ingin buat aplikasi atau website seperti ini?</p>
-                <a href="https://rimpangdigital.com/" target="_blank" class="inline-block text-amber-400 font-bold hover:text-amber-300 underline underline-offset-2">
-                    Kunjungi Rimpang Digital Kreatif
-                </a>
-            </div>
-        </div>
-    </div>
+    <footer class="mt-12 text-center font-bold border-t-4 border-black pt-4 w-full max-w-4xl">
+        <p>© 2026 RIMPANG DIGITAL KREATIF. Powered by Gemini AI.</p>
+    </footer>
 
     <script>
-        // --- 1. THEME CONFIGURATIONS ---
-        const themes = [
-            {
-                id: 'normal',
-                name: 'Original',
-                icon: 'fa-user',
-                color: 'bg-slate-700',
-                cssFilter: 'none',
-                overlayText: '',
-                drawOverlay: (ctx, w, h) => {} 
-            },
-            {
-                id: 'matrix',
-                name: 'The Matrix',
-                icon: 'fa-code',
-                color: 'bg-green-700',
-                cssFilter: 'sepia(100%) hue-rotate(80deg) saturate(300%) contrast(1.2)',
-                overlayText: 'THE MATRIX',
-                drawOverlay: (ctx, w, h) => {
-                    // Digital rain simulation border
-                    ctx.fillStyle = '#00ff00';
-                    ctx.font = `bold ${Math.floor(w*0.04)}px monospace`;
-                    ctx.fillText('0 1 0 1 1 0 1 0', w*0.05, h*0.1);
-                    ctx.fillText('W A K E  U P', w*0.05, h*0.9);
-                }
-            },
-            {
-                id: 'starwars',
-                name: 'Star Wars',
-                icon: 'fa-space-shuttle',
-                color: 'bg-blue-800',
-                cssFilter: 'contrast(1.2) brightness(1.1)',
-                overlayText: 'GALAXY FAR FAR AWAY',
-                drawOverlay: (ctx, w, h) => {
-                    // Cinematic letterbox & Light/Dark side border
-                    ctx.fillStyle = 'rgba(0,0,0,0.8)';
-                    ctx.fillRect(0, 0, w, h*0.08); // Top letterbox
-                    ctx.fillRect(0, h*0.92, w, h*0.08); // Bottom letterbox
-                    ctx.strokeStyle = '#00f'; // Jedi blue
-                    ctx.lineWidth = 8;
-                    ctx.strokeRect(w*0.02, h*0.1, w*0.45, h*0.8);
-                    ctx.strokeStyle = '#f00'; // Sith red
-                    ctx.strokeRect(w*0.53, h*0.1, w*0.45, h*0.8);
-                    ctx.fillStyle = '#ffe81f'; // Star Wars Yellow
-                    ctx.font = `bold ${Math.floor(w*0.03)}px Impact`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('MAY THE FORCE BE WITH YOU', w/2, h*0.06);
-                }
-            },
-            {
-                id: 'godfather',
-                name: 'The Godfather',
-                icon: 'fa-user-tie',
-                color: 'bg-stone-800',
-                cssFilter: 'grayscale(100%) contrast(1.5) brightness(0.8)',
-                overlayText: 'THE DON',
-                drawOverlay: (ctx, w, h) => {
-                    // Vignette effect
-                    const gradient = ctx.createRadialGradient(w/2, h/2, h*0.2, w/2, h/2, h*0.8);
-                    gradient.addColorStop(0, 'rgba(0,0,0,0)');
-                    gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, w, h);
-                    
-                    ctx.fillStyle = 'white';
-                    ctx.font = `italic bold ${Math.floor(w*0.04)}px serif`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('"I\'m gonna make him an offer he can\'t refuse."', w/2, h*0.9);
-                }
-            },
-            {
-                id: 'harrypotter',
-                name: 'Harry Potter',
-                icon: 'fa-bolt',
-                color: 'bg-yellow-800',
-                cssFilter: 'sepia(40%) contrast(1.1) brightness(0.9)',
-                overlayText: 'MAGIC SPELL',
-                drawOverlay: (ctx, w, h) => {
-                    ctx.strokeStyle = '#d4af37'; // Gold
-                    ctx.lineWidth = 10;
-                    ctx.strokeRect(10, 10, w-20, h-20);
-                    ctx.font = `${Math.floor(w*0.06)}px Arial`;
-                    ctx.fillText('⚡ 🧙‍♂️ 🦉', w/2, h*0.1);
-                    ctx.fillStyle = '#d4af37';
-                    ctx.font = `bold ${Math.floor(w*0.03)}px serif`;
-                    ctx.fillText('EXPECTO PATRONUM', w/2, h*0.92);
-                }
-            },
-            {
-                id: 'jurassic',
-                name: 'Jurassic Park',
-                icon: 'fa-paw',
-                color: 'bg-green-900',
-                cssFilter: 'sepia(50%) hue-rotate(50deg) contrast(1.2)',
-                overlayText: 'DINO ZONE',
-                drawOverlay: (ctx, w, h) => {
-                    ctx.strokeStyle = '#4a5d23'; // Camo green
-                    ctx.lineWidth = 20;
-                    ctx.strokeRect(0, 0, w, h);
-                    ctx.fillStyle = '#eab308'; // Yellow text
-                    ctx.font = `bold ${Math.floor(w*0.04)}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('T-REX INCOMING', w/2, h*0.08);
-                    ctx.font = `${Math.floor(w*0.08)}px Arial`;
-                    ctx.fillText('🦖 🌴 🦕', w/2, h*0.9);
-                }
-            },
-            {
-                id: 'avengers',
-                name: 'Avengers',
-                icon: 'fa-shield-alt',
-                color: 'bg-red-700',
-                cssFilter: 'contrast(1.3) saturate(1.5)',
-                overlayText: 'ASSEMBLE',
-                drawOverlay: (ctx, w, h) => {
-                    ctx.fillStyle = '#e23636'; // Marvel Red
-                    ctx.fillRect(w*0.02, h*0.02, w*0.2, h*0.08);
-                    ctx.fillStyle = 'white';
-                    ctx.font = `bold ${Math.floor(w*0.04)}px sans-serif`;
-                    ctx.textAlign = 'left';
-                    ctx.fillText('MARVEL', w*0.03, h*0.075);
-                    ctx.font = `${Math.floor(w*0.06)}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('🦸‍♂️ ⚡ 🛡️ 🔨', w/2, h*0.92);
-                }
-            },
-            {
-                id: 'avatar',
-                name: 'Avatar',
-                icon: 'fa-leaf',
-                color: 'bg-cyan-700',
-                cssFilter: 'hue-rotate(-120deg) saturate(2) brightness(1.2)',
-                overlayText: 'PANDORA',
-                drawOverlay: (ctx, w, h) => {
-                    // Glowing dots overlay
-                    ctx.fillStyle = 'rgba(0, 255, 255, 0.4)';
-                    for(let i=0; i<30; i++) {
-                        ctx.beginPath();
-                        ctx.arc(Math.random()*w, Math.random()*h, Math.random()*5+2, 0, Math.PI*2);
-                        ctx.fill();
-                    }
-                    ctx.fillStyle = '#a5f3fc';
-                    ctx.font = `italic ${Math.floor(w*0.04)}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('WELCOME TO PANDORA', w/2, h*0.9);
-                }
-            },
-            {
-                id: 'terminator',
-                name: 'Terminator',
-                icon: 'fa-robot',
-                color: 'bg-red-900',
-                cssFilter: 'sepia(100%) hue-rotate(-50deg) saturate(500%) contrast(2)',
-                overlayText: 'TARGET ACQUIRED',
-                drawOverlay: (ctx, w, h) => {
-                    // HUD UI
-                    ctx.strokeStyle = 'rgba(255,0,0,0.7)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(w*0.1, h*0.1, w*0.8, h*0.8);
-                    
-                    ctx.beginPath();
-                    ctx.arc(w/2, h/2, h*0.2, 0, Math.PI*2);
-                    ctx.stroke();
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(w/2, h*0.2); ctx.lineTo(w/2, h*0.8);
-                    ctx.moveTo(w*0.2, h/2); ctx.lineTo(w*0.8, h/2);
-                    ctx.stroke();
+        // Konfigurasi API - Sesuai instruksi sistem
+        const apiKey = ""; 
+        const MODEL_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent";
 
-                    ctx.fillStyle = 'red';
-                    ctx.font = `bold ${Math.floor(w*0.03)}px monospace`;
-                    ctx.textAlign = 'left';
-                    ctx.fillText('SYS_OVERRIDE: 100%', w*0.12, h*0.15);
-                    ctx.fillText('I\'LL BE BACK.', w*0.12, h*0.85);
-                }
-            },
-            {
-                id: 'titanic',
-                name: 'Titanic',
-                icon: 'fa-ship',
-                color: 'bg-sky-800',
-                cssFilter: 'sepia(50%) hue-rotate(180deg) contrast(0.9) brightness(1.1)',
-                overlayText: 'KING OF THE WORLD',
-                drawOverlay: (ctx, w, h) => {
-                    // Soft blue vignette
-                    const gradient = ctx.createLinearGradient(0, 0, 0, h);
-                    gradient.addColorStop(0, 'rgba(14, 165, 233, 0.2)');
-                    gradient.addColorStop(1, 'rgba(2, 132, 199, 0.5)');
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, w, h);
-                    
-                    ctx.fillStyle = 'white';
-                    ctx.font = `italic ${Math.floor(w*0.04)}px serif`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('🛳️ I\'m flying, Jack! 🌊', w/2, h*0.9);
-                }
-            },
-            {
-                id: 'joker',
-                name: 'Joker',
-                icon: 'fa-masks-theater',
-                color: 'bg-purple-800',
-                cssFilter: 'sepia(40%) hue-rotate(70deg) contrast(1.4) saturate(1.2)',
-                overlayText: 'SMILE',
-                drawOverlay: (ctx, w, h) => {
-                    ctx.fillStyle = '#facc15'; // Yellow text
-                    ctx.font = `bold ${Math.floor(w*0.05)}px Impact`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('PUT ON A HAPPY FACE', w/2, h*0.1);
-                    ctx.font = `${Math.floor(w*0.1)}px Arial`;
-                    ctx.fillText('🤡', w/2, h*0.9);
-                }
+        // Variabel Global
+        let currentImageBase64 = null;
+        let videoStream = null;
+
+        // Elemen DOM
+        const videoElement = document.getElementById('videoElement');
+        const hiddenCanvas = document.getElementById('hiddenCanvas');
+        const inputPreviewImage = document.getElementById('inputPreviewImage');
+        const inputPreviewContainer = document.getElementById('inputPreviewContainer');
+        const btnGenerate = document.getElementById('btnGenerate');
+
+        // ==== MANAJEMEN TAB (UPLOAD / KAMERA) ====
+        function switchTab(tab) {
+            const btnUpload = document.getElementById('btnTabUpload');
+            const btnCamera = document.getElementById('btnTabCamera');
+            const secUpload = document.getElementById('sectionUpload');
+            const secCamera = document.getElementById('sectionCamera');
+
+            if (tab === 'upload') {
+                btnUpload.classList.replace('bg-white', 'bg-yellow');
+                btnCamera.classList.replace('bg-yellow', 'bg-white');
+                secUpload.classList.remove('hidden');
+                secUpload.classList.add('flex');
+                secCamera.classList.add('hidden');
+                secCamera.classList.remove('flex');
+                stopCamera(); // Matikan kamera jika pindah ke upload
+            } else {
+                btnCamera.classList.replace('bg-white', 'bg-yellow');
+                btnUpload.classList.replace('bg-yellow', 'bg-white');
+                secCamera.classList.remove('hidden');
+                secCamera.classList.add('flex');
+                secUpload.classList.add('hidden');
+                secUpload.classList.remove('flex');
             }
-        ];
+        }
 
-        let currentTheme = themes[0];
-        let stream = null;
+        // ==== LOGIKA UPLOAD GAMBAR ====
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        // --- 2. DOM ELEMENTS ---
-        const video = document.getElementById('video-preview');
-        const canvas = document.getElementById('photo-canvas');
-        const ctx = canvas.getContext('2d');
-        const captureBtn = document.getElementById('capture-btn');
-        const themeContainer = document.getElementById('theme-container');
-        const currentThemeLabel = document.getElementById('current-theme-label');
-        const flashScreen = document.getElementById('flash-screen');
-        const resultModal = document.getElementById('result-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const downloadBtn = document.getElementById('download-btn');
-        const printBtn = document.getElementById('print-btn');
-        const retakeBtn = document.getElementById('retake-btn');
-        const loadingOverlay = document.getElementById('camera-loading');
-        const startCamBtn = document.getElementById('start-cam-btn');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Setel preview dan simpan base64 (buang header data:image/...)
+                setInputPreview(e.target.result);
+            }
+            reader.readAsDataURL(file);
+        }
 
-        // --- 3. CAMERA SETUP ---
-        async function initCamera() {
+        // ==== LOGIKA KAMERA ====
+        async function startCamera() {
             try {
-                // Determine resolution based on device capability, default to 720p HD
-                const constraints = {
-                    video: { 
-                        facingMode: 'user', // Selfie cam
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                };
-
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
+                });
+                videoElement.srcObject = videoStream;
+                videoElement.classList.remove('hidden');
+                document.getElementById('cameraPlaceholder').classList.add('hidden');
                 
-                video.onloadedmetadata = () => {
-                    loadingOverlay.classList.add('hidden');
-                    captureBtn.disabled = false;
-                };
-
+                document.getElementById('btnStartCamera').classList.add('hidden');
+                document.getElementById('btnCapture').classList.remove('hidden');
             } catch (err) {
-                console.error("Camera access error:", err);
-                loadingOverlay.innerHTML = `
-                    <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-4"></i>
-                    <p class="text-white text-center px-4">Tidak dapat mengakses kamera.<br>Harap izinkan akses kamera di browser Anda.</p>
-                `;
-                startCamBtn.classList.remove('hidden');
-                startCamBtn.onclick = initCamera; // Try again
+                alert("Tidak dapat mengakses kamera. Pastikan izin diberikan.");
+                console.error(err);
             }
         }
 
-        // --- 4. THEME UI SETUP ---
-        function renderThemeButtons() {
-            themes.forEach((theme) => {
-                const btn = document.createElement('button');
-                btn.className = `flex-shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-xl border-2 transition-all ${theme.id === currentTheme.id ? 'border-amber-400 scale-105' : 'border-slate-700 hover:border-slate-500'} bg-slate-800`;
-                btn.innerHTML = `
-                    <div class="w-10 h-10 rounded-full ${theme.color} flex items-center justify-center text-white mb-2 shadow-inner">
-                        <i class="fas ${theme.icon}"></i>
-                    </div>
-                    <span class="text-xs font-bold text-center px-1 text-slate-200 line-clamp-1">${theme.name}</span>
-                `;
-                
-                btn.onclick = () => selectTheme(theme, btn);
-                themeContainer.appendChild(btn);
-            });
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
+                videoElement.classList.add('hidden');
+                document.getElementById('cameraPlaceholder').classList.remove('hidden');
+                document.getElementById('btnStartCamera').classList.remove('hidden');
+                document.getElementById('btnCapture').classList.add('hidden');
+            }
         }
 
-        function selectTheme(theme, btnElement) {
-            currentTheme = theme;
+        function capturePhoto() {
+            if (!videoStream) return;
             
-            // Update UI
-            document.querySelectorAll('#theme-container button').forEach(b => {
-                b.classList.remove('border-amber-400', 'scale-105');
-                b.classList.add('border-slate-700');
-            });
-            btnElement.classList.add('border-amber-400', 'scale-105');
-            btnElement.classList.remove('border-slate-700');
-
-            currentThemeLabel.innerText = `Tema: ${theme.name}`;
+            const context = hiddenCanvas.getContext('2d');
+            hiddenCanvas.width = videoElement.videoWidth;
+            hiddenCanvas.height = videoElement.videoHeight;
             
-            // Apply live CSS filter to video
-            video.style.filter = theme.cssFilter;
+            // Gambar frame video ke canvas
+            context.drawImage(videoElement, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+            
+            // Dapatkan Base64
+            const imageDataUrl = hiddenCanvas.toDataURL('image/jpeg', 0.8);
+            setInputPreview(imageDataUrl);
+            stopCamera();
+            switchTab('upload'); // Kembalikan view ke upload setelah jepret untuk memperlihatkan preview
         }
 
-        // --- 5. CAPTURE LOGIC ---
-        function takePhoto() {
-            if (!stream) return;
-
-            // Flash effect
-            flashScreen.classList.remove('flash-animation');
-            void flashScreen.offsetWidth; // trigger reflow
-            flashScreen.classList.add('flash-animation');
-
-            // Play sound effect (synthesized to avoid external files)
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.1);
-
-            // Set canvas size to match video resolution
-            canvas.width = video.videoWidth || 1280;
-            canvas.height = video.videoHeight || 720;
-
-            const w = canvas.width;
-            const h = canvas.height;
-
-            // Clear canvas
-            ctx.clearRect(0, 0, w, h);
-
-            // Draw Video Frame 
-            // Handle mirroring for the selfie cam so the saved image looks like what they saw
-            ctx.save();
-            ctx.translate(w, 0);
-            ctx.scale(-1, 1);
+        // ==== FUNGSI BANTUAN INPUT ====
+        function setInputPreview(dataUrl) {
+            inputPreviewImage.src = dataUrl;
+            inputPreviewContainer.classList.remove('hidden');
+            inputPreviewContainer.classList.add('flex');
             
-            // Apply current theme filter to the canvas context before drawing
-            ctx.filter = currentTheme.cssFilter;
-            ctx.drawImage(video, 0, 0, w, h);
-            ctx.restore(); // Restore to normal orientation for text/overlays
-            
-            // Re-apply filter for overlays if needed, or remove it so overlays are clean
-            ctx.filter = 'none';
-
-            // Draw Theme Specific Overlays
-            currentTheme.drawOverlay(ctx, w, h);
-
-            // Draw Mandatory Watermark: RIMPANG DIGITAL KREATIF
-            drawWatermark(w, h);
-
-            // Show Modal
-            setTimeout(() => {
-                resultModal.classList.remove('hidden');
-                resultModal.classList.add('flex');
-            }, 300); // slight delay to let flash finish
+            // Ekstrak base64 bersih untuk API Gemini
+            currentImageBase64 = dataUrl.split(',')[1];
+            checkReadyState();
         }
 
-        function drawWatermark(w, h) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-            const padding = w * 0.015;
-            const fontSize = Math.max(16, Math.floor(w * 0.025));
-            ctx.font = `bold ${fontSize}px Inter, sans-serif`;
-            
-            const text = "RIMPANG DIGITAL KREATIF";
-            const metrics = ctx.measureText(text);
-            const textWidth = metrics.width;
-            
-            const x = w - textWidth - (padding * 2) - 20;
-            const y = h - fontSize - (padding * 2) - 20;
-
-            // Draw background pill
-            ctx.beginPath();
-            ctx.roundRect(x, y, textWidth + (padding * 2), fontSize + (padding * 2), 10);
-            ctx.fill();
-
-            // Draw Text
-            ctx.fillStyle = '#f59e0b'; // Amber 500
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.fillText(text, x + padding, y + padding);
+        function clearInput() {
+            currentImageBase64 = null;
+            inputPreviewImage.src = "";
+            inputPreviewContainer.classList.add('hidden');
+            inputPreviewContainer.classList.remove('flex');
+            document.getElementById('fileInput').value = "";
+            checkReadyState();
         }
 
-        // --- 6. EXPORT LOGIC ---
-        function downloadImage() {
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // High quality JPG
+        function checkReadyState() {
+            // Aktifkan tombol jika ada gambar (Validasi tema dilakukan saat klik)
+            if (currentImageBase64) {
+                btnGenerate.removeAttribute('disabled');
+            } else {
+                btnGenerate.setAttribute('disabled', 'true');
+            }
+        }
+
+        // ==== LOGIKA PROMPT TEMA ====
+        const themePrompts = {
+            matrix: "Transform the person in the image into a character from The Matrix movie. Add cool black sunglasses, a long black leather trench coat. The background must be the iconic green falling digital code matrix effect. Cyberpunk style, dark and edgy lighting.",
+            starwars: "Transform the person in the image into a Jedi from Star Wars. Give them a glowing lightsaber and traditional Jedi robes. The background should be a futuristic space station or an alien planet with multiple moons. Cinematic lighting.",
+            harrypotter: "Transform the person in the image into a wizard from Harry Potter. They should wear Hogwarts wizard robes and hold a magic wand casting a spell. The background must be the magical Hogwarts castle or the Great Hall. Magical, mystical lighting.",
+            jurassic: "Transform the person in the image into an explorer from Jurassic Park. Give them a khaki explorer outfit, a hat, and a rugged look. The background must be a dense prehistoric jungle with a massive T-Rex or Brachiosaurus dinosaur visible behind them.",
+            godfather: "Transform the person in the image into a classic Mafia boss from The Godfather. Give them a sharp vintage tuxedo, a red rose on the lapel. The background should be a dark, vintage 1940s office with warm, moody, dramatic lighting and shadows.",
+            avatar: "Transform the person in the image into a Na'vi from the Avatar movie. Give them blue skin, bioluminescent spots, and tribal accessories. The background must be the glowing, magical bioluminescent forest of Pandora at night.",
+            madmax: "Transform the person in the image into a survivor from Mad Max. Give them post-apocalyptic rusted metal armor, goggles, and leather gear. The background must be a barren, orange desert wasteland with heavily modified punk cars.",
+            titanic: "Transform the person in the image into a character from the Titanic movie. Give them elegant, luxurious 1912 vintage formal attire. The background must be the grand staircase of the ship or the romantic ship deck at sunset. Romantic, soft lighting.",
+            avengers: "Transform the person in the image into a superhero from Marvel Avengers. Give them an epic, high-tech superhero armor or suit. The background must be an epic ruined city battleground with cinematic explosions and dramatic sky.",
+            barbie: "Transform the person in the image into a character from the Barbie movie. Give them ultra-fashionable, bright neon pink clothing. The background must be a vibrant, perfect, plastic-looking pink Dreamhouse or Barbieland. Bright, cheerful lighting."
+        };
+
+        // ==== SISTEM AI & ANTI ERROR (EXPONENTIAL BACKOFF) ====
+        
+        async function generateAIPhoto() {
+            const themeKey = document.getElementById('themeSelect').value;
+            
+            if (!currentImageBase64) {
+                alert("Harap masukkan foto terlebih dahulu!");
+                return;
+            }
+            if (!themeKey) {
+                alert("Harap pilih Tema Film terlebih dahulu!");
+                return;
+            }
+
+            const promptText = `Task: Perform an image-to-image transformation. Preserve the main subject's facial features and core identity, but adapt their clothing, styling, and the entire background to fit the following theme perfectly: ${themePrompts[themeKey]}. Ensure high quality, hyper-realistic cinematic output.`;
+
+            // Setup UI Loading
+            document.getElementById('resultEmpty').classList.add('hidden');
+            document.getElementById('resultOutput').classList.add('hidden');
+            const loadingState = document.getElementById('loadingState');
+            loadingState.classList.remove('hidden');
+            loadingState.classList.add('flex');
+            
+            const retryMessage = document.getElementById('retryMessage');
+            const retryCountSpan = document.getElementById('retryCount');
+            const loadingMessageText = document.getElementById('loadingMessage');
+            
+            retryMessage.classList.add('hidden');
+            loadingMessageText.innerText = "AI sedang melukis ulang realita...";
+
+            const payload = {
+                contents: [
+                    {
+                        parts: [
+                            { text: promptText },
+                            { inlineData: { mimeType: "image/jpeg", data: currentImageBase64 } }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    responseModalities: ["IMAGE"]
+                }
+            };
+
+            // Implementasi Exponential Backoff (Sesuai instruksi: 1s, 2s, 4s, 8s, 16s)
+            const maxRetries = 5;
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            let success = false;
+
+            for (let i = 0; i <= maxRetries; i++) {
+                try {
+                    const response = await fetch(`${MODEL_ENDPOINT}?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server Error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    // Ekstrak hasil gambar dari response Gemini 2.5 Flash Image Preview
+                    let resultBase64 = null;
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                        const imagePart = data.candidates[0].content.parts.find(p => p.inlineData);
+                        if (imagePart) {
+                            resultBase64 = imagePart.inlineData.data;
+                        }
+                    }
+
+                    if (resultBase64) {
+                        displayResult(`data:image/jpeg;base64,${resultBase64}`);
+                        success = true;
+                        break; // Berhasil, keluar dari loop
+                    } else {
+                        throw new Error("Format respons API tidak valid atau gambar tidak dihasilkan.");
+                    }
+
+                } catch (error) {
+                    if (i === maxRetries) {
+                        // Gagal setelah semua percobaan
+                        loadingState.classList.add('hidden');
+                        loadingState.classList.remove('flex');
+                        document.getElementById('resultEmpty').classList.remove('hidden');
+                        alert("Mohon Maaf. Server AI sedang sangat sibuk atau terjadi kesalahan sistem. Silakan coba beberapa saat lagi.");
+                        console.error("Final Error:", error);
+                    } else {
+                        // Tampilkan pesan retry
+                        retryMessage.classList.remove('hidden');
+                        retryCountSpan.innerText = i + 1;
+                        loadingMessageText.innerText = `Menghubungi ulang server dalam ${delays[i]/1000} detik...`;
+                        
+                        // Tunggu delay eksponensial
+                        await new Promise(resolve => setTimeout(resolve, delays[i]));
+                        loadingMessageText.innerText = "Memproses kembali...";
+                    }
+                }
+            }
+        }
+
+        // ==== TAMPILKAN & EKSPOR HASIL ====
+        function displayResult(imageUrl) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('flex');
+            
+            const resultOutput = document.getElementById('resultOutput');
+            resultOutput.classList.remove('hidden');
+            resultOutput.classList.add('flex');
+            
+            document.getElementById('finalImage').src = imageUrl;
+        }
+
+        function downloadJPG() {
+            const imgSrc = document.getElementById('finalImage').src;
+            if (!imgSrc || imgSrc === "") return;
+
             const link = document.createElement('a');
-            link.download = `Rimpang_PhotoBooth_${currentTheme.name.replace(/\s+/g, '_')}_${Date.now()}.jpg`;
-            link.href = dataUrl;
+            link.href = imgSrc;
+            link.download = `Rimpang_AI_Photo_${new Date().getTime()}.jpg`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
         function printImage() {
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            
-            // Create a hidden iframe for printing to avoid popup blockers and UI disruption
-            const printIframe = document.createElement('iframe');
-            printIframe.style.position = 'absolute';
-            printIframe.style.width = '0';
-            printIframe.style.height = '0';
-            printIframe.style.border = 'none';
-            document.body.appendChild(printIframe);
+            const imgSrc = document.getElementById('finalImage').src;
+            if (!imgSrc || imgSrc === "") return;
 
-            const printDocument = printIframe.contentWindow.document;
-            printDocument.open();
-            printDocument.write(`
+            // Membuat window baru khusus untuk print agar rapi
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
                 <html>
                 <head>
-                    <title>Print Photo - Rimpang Digital</title>
+                    <title>Print - RIMPANG DIGITAL KREATIF</title>
                     <style>
-                        @page { margin: 0; size: auto; }
-                        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
-                        img { max-width: 100%; max-height: 100vh; object-fit: contain; }
+                        body { margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; }
+                        img { max-width: 100%; max-height: 85vh; border: 4px solid black; }
+                        .watermark { margin-top: 15px; font-weight: bold; font-size: 24px; text-align: center; }
                     </style>
                 </head>
                 <body>
-                    <img src="${dataUrl}" onload="window.print(); window.parent.document.body.removeChild(window.frameElement);" />
+                    <img src="${imgSrc}" />
+                    <div class="watermark">RIMPANG DIGITAL KREATIF AI</div>
+                    <script>
+                        window.onload = () => {
+                            window.print();
+                            setTimeout(() => window.close(), 500);
+                        }
+                    <\/script>
                 </body>
                 </html>
             `);
-            printDocument.close();
+            printWindow.document.close();
         }
-
-        // --- 7. EVENT LISTENERS & INIT ---
-        captureBtn.addEventListener('click', takePhoto);
-        closeModalBtn.addEventListener('click', () => {
-            resultModal.classList.add('hidden');
-            resultModal.classList.remove('flex');
-        });
-        retakeBtn.addEventListener('click', () => {
-            resultModal.classList.add('hidden');
-            resultModal.classList.remove('flex');
-        });
-        downloadBtn.addEventListener('click', downloadImage);
-        printBtn.addEventListener('click', printImage);
-
-        // Run on load
-        window.onload = () => {
-            renderThemeButtons();
-            
-            // Set initial button state
-            const firstBtn = themeContainer.querySelector('button');
-            if(firstBtn) {
-                firstBtn.classList.add('border-amber-400', 'scale-105');
-                firstBtn.classList.remove('border-slate-700');
-            }
-
-            initCamera();
-        };
-
     </script>
 </body>
 </html>
