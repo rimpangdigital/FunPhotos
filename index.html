@@ -28,7 +28,7 @@
         }
 
         h1, h2, h3, .retro-title {
-            font-family: 'Bangers', cursive;
+            font-family: 'Bangers', cursive, sans-serif;
             letter-spacing: 2px;
         }
 
@@ -41,7 +41,7 @@
         }
 
         .retro-btn {
-            font-family: 'Righteous', cursive;
+            font-family: 'Righteous', cursive, sans-serif;
             text-transform: uppercase;
             border: var(--border-width) solid var(--color-dark);
             box-shadow: 6px 6px 0px var(--color-dark);
@@ -52,14 +52,20 @@
             left: 0;
         }
 
-        .retro-btn:hover {
+        .retro-btn:hover:not(:disabled) {
             box-shadow: 8px 8px 0px var(--color-dark);
             transform: translate(-2px, -2px);
         }
 
-        .retro-btn:active {
+        .retro-btn:active:not(:disabled) {
             box-shadow: 0px 0px 0px var(--color-dark);
             transform: translate(6px, 6px);
+        }
+        
+        .retro-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: 0px 0px 0px var(--color-dark);
         }
 
         .bg-magenta { background-color: var(--color-primary); color: white; }
@@ -94,6 +100,9 @@
             body * {
                 visibility: hidden;
             }
+            body {
+                background: white;
+            }
             #print-area, #print-area * {
                 visibility: visible;
             }
@@ -101,15 +110,42 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 100%;
+                width: 100vw;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: white;
+                border: none;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+            #finalImage {
+                max-width: 100%;
+                max-height: 85vh;
+                object-fit: contain;
+                border: 4px solid black !important;
+            }
+            .print-watermark {
+                display: block !important;
+                margin-top: 15px;
+                font-family: 'Bangers', cursive;
+                font-size: 24px;
+                font-weight: bold;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col items-center">
 
+    <!-- Custom Toast Message -->
+    <div id="toast" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-yellow text-dark font-bold px-6 py-4 border-4 border-black z-50 shadow-[6px_6px_0_0_#000] text-center max-w-sm w-full transition-opacity">
+        <span id="toastMessage" class="text-lg"></span>
+    </div>
+
     <!-- Header Section -->
-    <header class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <header class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
         <div class="retro-box bg-white p-4 text-center md:text-left transform -rotate-2">
             <h1 class="text-4xl md:text-5xl text-red-500" style="text-shadow: 2px 2px 0 #000;">RIMPANG</h1>
             <h2 class="text-2xl md:text-3xl text-blue-500">DIGITAL KREATIF</h2>
@@ -167,26 +203,26 @@
                 <h4 class="font-bold">Foto Terpilih:</h4>
                 <div class="border-4 border-black p-2 bg-gray-100 relative">
                     <img id="inputPreviewImage" class="w-full h-auto object-cover max-h-48" src="" alt="Preview">
-                    <button onclick="clearInput()" class="absolute top-0 right-0 bg-red-500 text-white p-1 border-2 border-black transform translate-x-2 -translate-y-2 hover:bg-red-600">X</button>
+                    <button onclick="clearInput()" class="absolute top-0 right-0 bg-red-500 text-white p-1 px-3 border-2 border-black transform translate-x-2 -translate-y-2 hover:bg-red-600 font-bold">X</button>
                 </div>
             </div>
 
             <h3 class="text-2xl border-b-4 border-black pb-2 mt-4">2. PILIH TEMA FILM</h3>
-            <select id="themeSelect" class="retro-input text-lg font-bold p-3 appearance-none cursor-pointer">
+            <select id="themeSelect" class="retro-input text-lg font-bold p-3 appearance-none cursor-pointer" onchange="checkReadyState()">
                 <option value="" disabled selected>-- Pilih Semesta Film --</option>
-                <option value="matrix">1. The Matrix (Cyberpunk, Hacker, Kacamata Hitam)</option>
-                <option value="starwars">2. Star Wars (Jedi, Luar Angkasa, Futuristik)</option>
-                <option value="harrypotter">3. Harry Potter (Penyihir, Tongkat Sihir, Hogwarts)</option>
-                <option value="jurassic">4. Jurassic Park (Hutan Tropis, Penjelajah, Dinosaurus)</option>
-                <option value="godfather">5. The Godfather (Mafia Klasik, Jas Rapi, Retro)</option>
-                <option value="avatar">6. Avatar (Pandora, Hutan Menyala, Fiksi Ilmiah)</option>
-                <option value="madmax">7. Mad Max (Post-Apocalyptic, Gurun, Punk)</option>
-                <option value="titanic">8. Titanic (Romantis Klasik, Kapal Mewah, Gaun/Jas)</option>
-                <option value="avengers">9. Marvel Avengers (Pahlawan Super, Aksi, Kota Epik)</option>
-                <option value="barbie">10. Barbie (Dunia Pink, Fashionable, Plastik Estetik)</option>
+                <option value="matrix">1. The Matrix (Cyberpunk, Hacker)</option>
+                <option value="starwars">2. Star Wars (Jedi, Luar Angkasa)</option>
+                <option value="harrypotter">3. Harry Potter (Penyihir, Hogwarts)</option>
+                <option value="jurassic">4. Jurassic Park (Hutan Tropis, Dinosaurus)</option>
+                <option value="godfather">5. The Godfather (Mafia Klasik, Retro)</option>
+                <option value="avatar">6. Avatar (Pandora, Hutan Menyala)</option>
+                <option value="madmax">7. Mad Max (Post-Apocalyptic, Gurun)</option>
+                <option value="titanic">8. Titanic (Romantis Klasik, Kapal Mewah)</option>
+                <option value="avengers">9. Marvel Avengers (Pahlawan Super, Aksi)</option>
+                <option value="barbie">10. Barbie (Dunia Pink, Fashionable)</option>
             </select>
 
-            <button id="btnGenerate" class="retro-btn bg-magenta text-2xl py-4 mt-4 w-full disabled:opacity-50 disabled:cursor-not-allowed" onclick="generateAIPhoto()">
+            <button id="btnGenerate" class="retro-btn bg-magenta text-2xl py-4 mt-4 w-full" onclick="generateAIPhoto()" disabled>
                 ✨ TRANSFORMASI AI ✨
             </button>
         </div>
@@ -215,7 +251,7 @@
                 <div class="border-4 border-black p-2 bg-gray-100" id="print-area">
                     <img id="finalImage" src="" alt="Hasil AI" class="w-full h-auto object-cover border-2 border-black">
                     <!-- Watermark for print -->
-                    <div class="hidden print:block text-center font-bold mt-2 font-['Bangers'] text-xl">RIMPANG DIGITAL KREATIF AI</div>
+                    <div class="hidden print-watermark">RIMPANG DIGITAL KREATIF AI</div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 mt-auto">
@@ -236,12 +272,12 @@
     <!-- Canvas Tersembunyi untuk proses gambar -->
     <canvas id="hiddenCanvas" class="hidden"></canvas>
 
-    <footer class="mt-12 text-center font-bold border-t-4 border-black pt-4 w-full max-w-4xl">
+    <footer class="mt-12 text-center font-bold border-t-4 border-black pt-4 w-full max-w-4xl pb-8">
         <p>© 2026 RIMPANG DIGITAL KREATIF. Powered by Gemini AI.</p>
     </footer>
 
     <script>
-        // Konfigurasi API - Sesuai instruksi sistem
+        // Konfigurasi API - Menggunakan token dari environment execution
         const apiKey = ""; 
         const MODEL_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent";
 
@@ -255,6 +291,17 @@
         const inputPreviewImage = document.getElementById('inputPreviewImage');
         const inputPreviewContainer = document.getElementById('inputPreviewContainer');
         const btnGenerate = document.getElementById('btnGenerate');
+        const themeSelect = document.getElementById('themeSelect');
+
+        // ==== FUNGSI TOAST (PENGGANTI ALERT) ====
+        function showMessage(msg, duration = 3000) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, duration);
+        }
 
         // ==== MANAJEMEN TAB (UPLOAD / KAMERA) ====
         function switchTab(tab) {
@@ -270,7 +317,7 @@
                 secUpload.classList.add('flex');
                 secCamera.classList.add('hidden');
                 secCamera.classList.remove('flex');
-                stopCamera(); // Matikan kamera jika pindah ke upload
+                stopCamera();
             } else {
                 btnCamera.classList.replace('bg-white', 'bg-yellow');
                 btnUpload.classList.replace('bg-yellow', 'bg-white');
@@ -288,7 +335,6 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                // Setel preview dan simpan base64 (buang header data:image/...)
                 setInputPreview(e.target.result);
             }
             reader.readAsDataURL(file);
@@ -307,8 +353,7 @@
                 document.getElementById('btnStartCamera').classList.add('hidden');
                 document.getElementById('btnCapture').classList.remove('hidden');
             } catch (err) {
-                alert("Tidak dapat mengakses kamera. Pastikan izin diberikan.");
-                console.error(err);
+                showMessage("Tidak dapat mengakses kamera. Pastikan izin diberikan pada browser Anda.");
             }
         }
 
@@ -337,7 +382,7 @@
             const imageDataUrl = hiddenCanvas.toDataURL('image/jpeg', 0.8);
             setInputPreview(imageDataUrl);
             stopCamera();
-            switchTab('upload'); // Kembalikan view ke upload setelah jepret untuk memperlihatkan preview
+            switchTab('upload');
         }
 
         // ==== FUNGSI BANTUAN INPUT ====
@@ -346,7 +391,7 @@
             inputPreviewContainer.classList.remove('hidden');
             inputPreviewContainer.classList.add('flex');
             
-            // Ekstrak base64 bersih untuk API Gemini
+            // Ekstrak base64 bersih
             currentImageBase64 = dataUrl.split(',')[1];
             checkReadyState();
         }
@@ -361,8 +406,8 @@
         }
 
         function checkReadyState() {
-            // Aktifkan tombol jika ada gambar (Validasi tema dilakukan saat klik)
-            if (currentImageBase64) {
+            // Aktifkan tombol HANYA JIKA foto sudah ada DAN tema sudah dipilih
+            if (currentImageBase64 && themeSelect.value) {
                 btnGenerate.removeAttribute('disabled');
             } else {
                 btnGenerate.setAttribute('disabled', 'true');
@@ -384,16 +429,15 @@
         };
 
         // ==== SISTEM AI & ANTI ERROR (EXPONENTIAL BACKOFF) ====
-        
         async function generateAIPhoto() {
-            const themeKey = document.getElementById('themeSelect').value;
+            const themeKey = themeSelect.value;
             
             if (!currentImageBase64) {
-                alert("Harap masukkan foto terlebih dahulu!");
+                showMessage("Harap masukkan foto terlebih dahulu!");
                 return;
             }
             if (!themeKey) {
-                alert("Harap pilih Tema Film terlebih dahulu!");
+                showMessage("Harap pilih Tema Film terlebih dahulu!");
                 return;
             }
 
@@ -412,10 +456,12 @@
             
             retryMessage.classList.add('hidden');
             loadingMessageText.innerText = "AI sedang melukis ulang realita...";
+            btnGenerate.setAttribute('disabled', 'true');
 
             const payload = {
                 contents: [
                     {
+                        role: "user",
                         parts: [
                             { text: promptText },
                             { inlineData: { mimeType: "image/jpeg", data: currentImageBase64 } }
@@ -423,14 +469,14 @@
                     }
                 ],
                 generationConfig: {
-                    responseModalities: ["IMAGE"]
+                    responseModalities: ["TEXT", "IMAGE"]
                 }
             };
 
-            // Implementasi Exponential Backoff (Sesuai instruksi: 1s, 2s, 4s, 8s, 16s)
+            // Implementasi Exponential Backoff (1s, 2s, 4s, 8s, 16s)
             const maxRetries = 5;
             const delays = [1000, 2000, 4000, 8000, 16000];
-            let success = false;
+            let resultBase64 = null;
 
             for (let i = 0; i <= maxRetries; i++) {
                 try {
@@ -446,18 +492,11 @@
 
                     const data = await response.json();
                     
-                    // Ekstrak hasil gambar dari response Gemini 2.5 Flash Image Preview
-                    let resultBase64 = null;
-                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                        const imagePart = data.candidates[0].content.parts.find(p => p.inlineData);
-                        if (imagePart) {
-                            resultBase64 = imagePart.inlineData.data;
-                        }
-                    }
-
-                    if (resultBase64) {
-                        displayResult(`data:image/jpeg;base64,${resultBase64}`);
-                        success = true;
+                    // Ekstrak hasil gambar
+                    const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                    
+                    if (imagePart?.inlineData?.data) {
+                        resultBase64 = imagePart.inlineData.data;
                         break; // Berhasil, keluar dari loop
                     } else {
                         throw new Error("Format respons API tidak valid atau gambar tidak dihasilkan.");
@@ -469,20 +508,25 @@
                         loadingState.classList.add('hidden');
                         loadingState.classList.remove('flex');
                         document.getElementById('resultEmpty').classList.remove('hidden');
-                        alert("Mohon Maaf. Server AI sedang sangat sibuk atau terjadi kesalahan sistem. Silakan coba beberapa saat lagi.");
-                        console.error("Final Error:", error);
+                        showMessage("Server AI sedang sangat sibuk atau terjadi kesalahan sistem. Silakan coba beberapa saat lagi.", 5000);
+                        checkReadyState(); // Re-enable button
+                        return;
                     } else {
-                        // Tampilkan pesan retry
+                        // Tampilkan status retry ke UI tanpa log ke console
                         retryMessage.classList.remove('hidden');
                         retryCountSpan.innerText = i + 1;
                         loadingMessageText.innerText = `Menghubungi ulang server dalam ${delays[i]/1000} detik...`;
                         
-                        // Tunggu delay eksponensial
                         await new Promise(resolve => setTimeout(resolve, delays[i]));
                         loadingMessageText.innerText = "Memproses kembali...";
                     }
                 }
             }
+
+            if (resultBase64) {
+                displayResult(`data:image/jpeg;base64,${resultBase64}`);
+            }
+            checkReadyState();
         }
 
         // ==== TAMPILKAN & EKSPOR HASIL ====
@@ -511,33 +555,13 @@
 
         function printImage() {
             const imgSrc = document.getElementById('finalImage').src;
-            if (!imgSrc || imgSrc === "") return;
-
-            // Membuat window baru khusus untuk print agar rapi
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Print - RIMPANG DIGITAL KREATIF</title>
-                    <style>
-                        body { margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; }
-                        img { max-width: 100%; max-height: 85vh; border: 4px solid black; }
-                        .watermark { margin-top: 15px; font-weight: bold; font-size: 24px; text-align: center; }
-                    </style>
-                </head>
-                <body>
-                    <img src="${imgSrc}" />
-                    <div class="watermark">RIMPANG DIGITAL KREATIF AI</div>
-                    <script>
-                        window.onload = () => {
-                            window.print();
-                            setTimeout(() => window.close(), 500);
-                        }
-                    <\/script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            if (!imgSrc || imgSrc === "") {
+                showMessage("Tidak ada gambar untuk dicetak.");
+                return;
+            }
+            // Menggunakan pemanggilan window.print() langsung untuk mencegah blokir pop-up.
+            // CSS @media print akan menangani tampilan yang tepat.
+            window.print();
         }
     </script>
 </body>
